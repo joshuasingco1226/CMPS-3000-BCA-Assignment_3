@@ -1,4 +1,5 @@
-# order_management.py
+#order_management.py
+import unittest
 
 class Order:
     def __init__(self, customer_name, items):
@@ -17,7 +18,7 @@ class Order:
         self.items.append((item_name, quantity, price))  
 
     def remove_item(self, item_name):
-        for item in self.items:  
+        for item in self.items[:]:  
             if item[0] == item_name:
                 self.items.remove(item)  
 
@@ -35,20 +36,38 @@ class Order:
         elif code == "SAVE30":
             return 0.3
 
-        
+class TestOrder(unittest.TestCase):
+    def setUp(self):
+        self.order = Order("Test", [("Book", 2, 15.00), ("Pen", 5, 1.50)])
+
+    def test_calculate_total(self):
+        self.assertEqual(self.order.calculate_total(), 37.5)
+
+    def test_valid_discount(self):
+        self.assertEqual(self.order.apply_discount("SAVE10"), 0.1)
+
+    def test_invalid_discount(self):
+        self.assertIsNone(self.order.apply_discount("FAKE CODE"))
+  
+    def test_remove_item(self):
+        self.order.remove_item("Pen")
+        self.assertEqual(len(self.order.items), 1)
+        self.assertEqual(self.order.items[0][0], "Book")
+
 def main():
     order = Order("Alice", [("Book", 2, 15.00), ("Pen", 5, 1.50)])
     order.add_item("Notebook", 3, 5.00)
     order.remove_item("Pen")
-    order.gross_print_summary()
+    order.gross_print_summary() 
     user_code = input("Enter code: ")
     discount = order.apply_discount(user_code)
     total_before_discount = order.calculate_total()
-    printed_discount = total_before_discount * discount
-    total_after_discount = total_before_discount-printed_discount
-
-
-    print("Discount rate: ", discount, f"\nTotal after discount: ${total_after_discount:.2f}")
+    if discount: 
+        printed_discount = total_before_discount * discount
+        total_after_discount = total_before_discount - printed_discount
+        print("Discount rate: ", discount, f"\nTotal after discount: ${total_after_discount:.2f}")
+    else:
+        print(f"Invalid discount code. Total remains: ${total_before_discount:.2f}")
 
 if __name__ == "__main__":
-    main()
+    main() 
